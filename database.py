@@ -7,6 +7,17 @@ DB_FILE = os.environ.get("DATABASE_PATH") or os.path.join(os.path.dirname(os.pat
 
 def get_db():
     db_path = os.environ.get("DATABASE_PATH") or DB_FILE
+    if os.environ.get("VERCEL"):
+        tmp_db = "/tmp/society.db"
+        if not os.path.exists(tmp_db):
+            local_db = os.path.join(os.path.dirname(os.path.abspath(__file__)), "society.db")
+            if os.path.exists(local_db):
+                try:
+                    import shutil
+                    shutil.copy2(local_db, tmp_db)
+                except Exception:
+                    pass
+        db_path = tmp_db
     parent_dir = os.path.dirname(os.path.abspath(db_path))
     if parent_dir and not os.path.exists(parent_dir):
         os.makedirs(parent_dir, exist_ok=True)
