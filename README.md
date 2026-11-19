@@ -1,5 +1,7 @@
 # AapliSociety - Society Management System
 
+🌐 **Live 24/7 Public Link**: **[https://aaplisociety-one.vercel.app](https://aaplisociety-one.vercel.app)**
+
 A full-featured Housing Society Management web application featuring **two distinct portals**:
 1. **Society Member Portal**: For flat residents and owners to manage family, vehicles, submit maintenance payments, track complaints, pre-approve visitor gate passes, and book amenities.
 2. **Management Admin Portal**: For managing committee members and office bearers to oversee resident directories, issue maintenance bills, review and approve payment receipts, broadcast circulars, resolve complaints, and log gate visitors.
