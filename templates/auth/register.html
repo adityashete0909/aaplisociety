@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+
+{% block title %}Register - {{ 'Admin Portal' if portal_type == 'admin' else 'Society Member' }}{% endblock %}
+
+{% block content %}
+<div class="max-w-lg mx-auto py-8">
+    <div class="bg-white rounded-3xl p-8 border border-slate-200 shadow-xl relative overflow-hidden">
+        <!-- Top Banner -->
+        <div class="h-2 w-full absolute top-0 left-0 
+            {% if portal_type == 'admin' %}bg-gradient-to-r from-blue-600 to-indigo-600{% else %}bg-gradient-to-r from-emerald-500 to-teal-500{% endif %}">
+        </div>
+
+        <div class="text-center space-y-2 mt-2">
+            <div class="w-14 h-14 mx-auto rounded-2xl flex items-center justify-center text-white text-2xl shadow-lg
+                {% if portal_type == 'admin' %}bg-blue-600 shadow-blue-500/30{% else %}bg-emerald-600 shadow-emerald-500/30{% endif %}">
+                <i class="fa-solid {% if portal_type == 'admin' %}fa-user-shield{% else %}fa-user-plus{% endif %}"></i>
+            </div>
+            <h2 class="text-2xl font-bold text-slate-900 tracking-tight">
+                {{ 'Admin Account Registration' if portal_type == 'admin' else 'New Resident Registration' }}
+            </h2>
+            <p class="text-xs text-slate-500">
+                {{ 'Create an administrative profile with authorized committee passkey' if portal_type == 'admin' else 'Register your flat profile to access bills, complaints, & society services' }}
+            </p>
+        </div>
+
+        <!-- Registration Form -->
+        <form method="POST" class="mt-6 space-y-4">
+            <div>
+                <label for="name" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Full Name *</label>
+                <input type="text" id="name" name="name" required placeholder="e.g. John Doe"
+                    class="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:bg-white transition-all
+                    {% if portal_type == 'admin' %}focus:ring-blue-500 focus:border-blue-500{% else %}focus:ring-emerald-500 focus:border-emerald-500{% endif %}">
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label for="email" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Email Address *</label>
+                    <input type="email" id="email" name="email" required placeholder="john@example.com"
+                        class="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:bg-white transition-all
+                        {% if portal_type == 'admin' %}focus:ring-blue-500 focus:border-blue-500{% else %}focus:ring-emerald-500 focus:border-emerald-500{% endif %}">
+                </div>
+                <div>
+                    <label for="phone" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Phone Number</label>
+                    <input type="tel" id="phone" name="phone" placeholder="+91 98765 43210"
+                        class="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:bg-white transition-all
+                        {% if portal_type == 'admin' %}focus:ring-blue-500 focus:border-blue-500{% else %}focus:ring-emerald-500 focus:border-emerald-500{% endif %}">
+                </div>
+            </div>
+
+            {% if portal_type == 'member' %}
+                <!-- Flat Details -->
+                <div class="grid grid-cols-2 gap-4 bg-emerald-50/50 p-3.5 rounded-2xl border border-emerald-100">
+                    <div>
+                        <label for="wing" class="block text-xs font-bold text-emerald-900 uppercase tracking-wider mb-1.5">Wing / Building</label>
+                        <input type="text" id="wing" name="wing" placeholder="e.g. A" maxlength="4"
+                            class="w-full px-4 py-2.5 bg-white border border-emerald-200 rounded-xl text-sm uppercase font-bold focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    </div>
+                    <div>
+                        <label for="flat_number" class="block text-xs font-bold text-emerald-900 uppercase tracking-wider mb-1.5">Flat Number *</label>
+                        <input type="text" id="flat_number" name="flat_number" required placeholder="e.g. 504"
+                            class="w-full px-4 py-2.5 bg-white border border-emerald-200 rounded-xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    </div>
+                </div>
+            {% else %}
+                <!-- Admin specific fields -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-blue-50/50 p-3.5 rounded-2xl border border-blue-100">
+                    <div>
+                        <label for="designation" class="block text-xs font-bold text-blue-900 uppercase tracking-wider mb-1.5">Designation</label>
+                        <input type="text" id="designation" name="designation" placeholder="e.g. Secretary / Treasurer"
+                            class="w-full px-4 py-2.5 bg-white border border-blue-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label for="secret_code" class="block text-xs font-bold text-blue-900 uppercase tracking-wider mb-1.5">Admin Passkey *</label>
+                        <input type="password" id="secret_code" name="secret_code" required placeholder="Authorized Code"
+                            class="w-full px-4 py-2.5 bg-white border border-blue-200 rounded-xl text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <p class="text-[10px] text-slate-500 mt-1">Default Demo Code: <span class="font-mono font-bold text-blue-700">SOCIETY2026</span></p>
+                    </div>
+                </div>
+            {% endif %}
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label for="password" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Password *</label>
+                    <input type="password" id="password" name="password" required placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;"
+                        class="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:bg-white transition-all
+                        {% if portal_type == 'admin' %}focus:ring-blue-500 focus:border-blue-500{% else %}focus:ring-emerald-500 focus:border-emerald-500{% endif %}">
+                </div>
+                <div>
+                    <label for="confirm_password" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Confirm Password *</label>
+                    <input type="password" id="confirm_password" name="confirm_password" required placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;"
+                        class="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:bg-white transition-all
+                        {% if portal_type == 'admin' %}focus:ring-blue-500 focus:border-blue-500{% else %}focus:ring-emerald-500 focus:border-emerald-500{% endif %}">
+                </div>
+            </div>
+
+            <button type="submit" 
+                class="w-full py-3 px-4 font-bold text-white rounded-xl shadow-lg transition-all text-sm flex items-center justify-center gap-2 mt-4
+                {% if portal_type == 'admin' %}
+                    bg-blue-600 hover:bg-blue-700 shadow-blue-600/25
+                {% else %}
+                    bg-emerald-600 hover:bg-emerald-700 shadow-emerald-600/25
+                {% endif %}">
+                <span>Complete Registration</span>
+                <i class="fa-solid fa-arrow-right text-xs"></i>
+            </button>
+        </form>
+
+        <div class="mt-6 pt-6 border-t border-slate-100 text-center text-xs text-slate-500">
+            Already registered? 
+            <a href="{{ url_for('login_admin' if portal_type == 'admin' else 'login_member') }}" 
+                class="font-bold hover:underline {% if portal_type == 'admin' %}text-blue-600{% else %}text-emerald-600{% endif %}">
+                Sign in to your account &rarr;
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

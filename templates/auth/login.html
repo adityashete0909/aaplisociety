@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+
+{% block title %}{{ portal_title }} - Login{% endblock %}
+
+{% block content %}
+<div class="max-w-md mx-auto py-8">
+    <div class="bg-white rounded-3xl p-8 border border-slate-200 shadow-xl relative overflow-hidden">
+        <!-- Top Glow/Bar depending on role -->
+        <div class="h-2 w-full absolute top-0 left-0 
+            {% if portal_type == 'admin' %}bg-gradient-to-r from-blue-600 to-indigo-600{% else %}bg-gradient-to-r from-emerald-500 to-teal-500{% endif %}">
+        </div>
+
+        <div class="text-center space-y-2 mt-2">
+            <div class="w-14 h-14 mx-auto rounded-2xl flex items-center justify-center text-white text-2xl shadow-lg
+                {% if portal_type == 'admin' %}bg-blue-600 shadow-blue-500/30{% else %}bg-emerald-600 shadow-emerald-500/30{% endif %}">
+                <i class="fa-solid {% if portal_type == 'admin' %}fa-shield-halved{% else %}fa-house-chimney-user{% endif %}"></i>
+            </div>
+            <h2 class="text-2xl font-bold text-slate-900 tracking-tight">{{ portal_title }}</h2>
+            <p class="text-xs text-slate-500">Sign in to access your personal dashboard & society data</p>
+        </div>
+
+        <!-- Quick Fill Demo Credentials Button -->
+        <div class="mt-6 bg-slate-50 p-3 rounded-xl border border-slate-200 text-center">
+            <p class="text-[11px] text-slate-500 mb-2">Testing the platform? Click below to autofill demo credentials:</p>
+            <button type="button" onclick="fillDemo()" 
+                class="px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors border
+                {% if portal_type == 'admin' %}
+                    bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100
+                {% else %}
+                    bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100
+                {% endif %}">
+                <i class="fa-solid fa-wand-magic-sparkles mr-1"></i> Fill Demo ({{ 'admin@society.com' if portal_type == 'admin' else 'rahul@society.com' }})
+            </button>
+        </div>
+
+        <!-- Login Form -->
+        <form method="POST" class="mt-6 space-y-4">
+            <div>
+                <label for="email" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Email Address</label>
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400">
+                        <i class="fa-solid fa-envelope text-sm"></i>
+                    </span>
+                    <input type="email" id="email" name="email" required placeholder="name@example.com"
+                        class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:bg-white transition-all
+                        {% if portal_type == 'admin' %}focus:ring-blue-500 focus:border-blue-500{% else %}focus:ring-emerald-500 focus:border-emerald-500{% endif %}">
+                </div>
+            </div>
+
+            <div>
+                <div class="flex items-center justify-between mb-1.5">
+                    <label for="password" class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Password</label>
+                </div>
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400">
+                        <i class="fa-solid fa-lock text-sm"></i>
+                    </span>
+                    <input type="password" id="password" name="password" required placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;"
+                        class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:bg-white transition-all
+                        {% if portal_type == 'admin' %}focus:ring-blue-500 focus:border-blue-500{% else %}focus:ring-emerald-500 focus:border-emerald-500{% endif %}">
+                </div>
+            </div>
+
+            <button type="submit" 
+                class="w-full py-3 px-4 font-bold text-white rounded-xl shadow-lg transition-all text-sm flex items-center justify-center gap-2 mt-2
+                {% if portal_type == 'admin' %}
+                    bg-blue-600 hover:bg-blue-700 shadow-blue-600/25
+                {% else %}
+                    bg-emerald-600 hover:bg-emerald-700 shadow-emerald-600/25
+                {% endif %}">
+                <span>Sign In to {{ 'Admin' if portal_type == 'admin' else 'Member' }} Portal</span>
+                <i class="fa-solid fa-arrow-right text-xs"></i>
+            </button>
+        </form>
+
+        <!-- Switch to other portal or registration -->
+        <div class="mt-6 pt-6 border-t border-slate-100 text-center space-y-3 text-xs text-slate-500">
+            {% if portal_type == 'member' %}
+                <p>Don't have a member account? <a href="{{ url_for('register_member') }}" class="font-bold text-emerald-600 hover:underline">Register your flat</a></p>
+                <div class="pt-2">
+                    <a href="{{ url_for('login_admin') }}" class="text-blue-600 hover:text-blue-800 font-medium inline-flex items-center gap-1">
+                        <i class="fa-solid fa-shield-halved"></i> Switch to Society Admin Portal &rarr;
+                    </a>
+                </div>
+            {% else %}
+                <p>New committee member? <a href="{{ url_for('register_admin') }}" class="font-bold text-blue-600 hover:underline">Register admin account</a></p>
+                <div class="pt-2">
+                    <a href="{{ url_for('login_member') }}" class="text-emerald-600 hover:text-emerald-800 font-medium inline-flex items-center gap-1">
+                        <i class="fa-solid fa-house-user"></i> Switch to Society Member Portal &rarr;
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function fillDemo() {
+    {% if portal_type == 'admin' %}
+        document.getElementById('email').value = 'admin@society.com';
+        document.getElementById('password').value = 'admin123';
+    {% else %}
+        document.getElementById('email').value = 'rahul@society.com';
+        document.getElementById('password').value = 'member123';
+    {% endif %}
+}
+</script>
+{% endblock %}

@@ -1,0 +1,929 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard - Society Management{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+    <!-- Admin Top Banner -->
+    <div class="bg-gradient-to-r from-blue-700 via-indigo-700 to-slate-900 rounded-3xl p-6 sm:p-8 text-white shadow-xl relative overflow-hidden">
+        <div class="absolute -right-10 -bottom-10 opacity-10 text-9xl">
+            <i class="fa-solid fa-shield-halved"></i>
+        </div>
+        <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div class="space-y-2">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/20 text-blue-200 text-xs font-semibold backdrop-blur-sm border border-blue-400/20">
+                    <i class="fa-solid fa-shield-cat text-blue-400"></i>
+                    Executive Management Committee Portal
+                </div>
+                <h1 class="text-2xl sm:text-4xl font-extrabold tracking-tight">
+                    Society Admin Console
+                </h1>
+                <p class="text-blue-100/80 text-xs sm:text-sm flex flex-wrap items-center gap-3">
+                    <span class="flex items-center gap-1.5"><i class="fa-solid fa-building"></i> <strong>{{ society.name if society else 'Housing Society' }}</strong></span>
+                    <span>&bull;</span>
+                    <span class="flex items-center gap-1.5"><i class="fa-solid fa-user-tie"></i> Admin: {{ current_user.name }}</span>
+                    <span>&bull;</span>
+                    <span class="flex items-center gap-1.5"><i class="fa-solid fa-circle-check text-emerald-400"></i> System Operational</span>
+                </p>
+            </div>
+
+            <!-- Quick Stats in Banner -->
+            <div class="grid grid-cols-3 gap-3">
+                <div class="bg-white/10 backdrop-blur-md px-3.5 py-3 rounded-2xl border border-white/10 text-center">
+                    <span class="text-[11px] text-blue-200 block">Flats/Members</span>
+                    <span class="text-xl sm:text-2xl font-black">{{ stats.total_members }}</span>
+                </div>
+                <div class="bg-white/10 backdrop-blur-md px-3.5 py-3 rounded-2xl border border-white/10 text-center">
+                    <span class="text-[11px] text-blue-200 block">Open Tickets</span>
+                    <span class="text-xl sm:text-2xl font-black text-amber-300">{{ stats.open_complaints }}</span>
+                </div>
+                <div class="bg-white/10 backdrop-blur-md px-3.5 py-3 rounded-2xl border border-white/10 text-center">
+                    <span class="text-[11px] text-blue-200 block">Pending Pymts</span>
+                    <span class="text-xl sm:text-2xl font-black text-rose-300">{{ stats.pending_payments }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Navigation Tabs -->
+    <div class="border-b border-slate-200 bg-white rounded-2xl p-2 shadow-sm flex items-center gap-2 overflow-x-auto">
+        <a href="{{ url_for('admin_dashboard', tab='overview') }}" 
+            class="px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 whitespace-nowrap transition-all
+            {% if active_tab == 'overview' %}bg-blue-600 text-white shadow-md shadow-blue-600/20{% else %}text-slate-600 hover:bg-slate-100{% endif %}">
+            <i class="fa-solid fa-chart-pie"></i>
+            <span>Executive Overview</span>
+        </a>
+
+        <a href="{{ url_for('admin_dashboard', tab='members') }}" 
+            class="px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 whitespace-nowrap transition-all
+            {% if active_tab == 'members' %}bg-blue-600 text-white shadow-md shadow-blue-600/20{% else %}text-slate-600 hover:bg-slate-100{% endif %}">
+            <i class="fa-solid fa-address-book"></i>
+            <span>Resident Directory</span>
+        </a>
+
+        <a href="{{ url_for('admin_dashboard', tab='billing') }}" 
+            class="px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 whitespace-nowrap transition-all
+            {% if active_tab == 'billing' %}bg-blue-600 text-white shadow-md shadow-blue-600/20{% else %}text-slate-600 hover:bg-slate-100{% endif %}">
+            <i class="fa-solid fa-file-invoice-dollar"></i>
+            <span>Billing & Payments</span>
+            {% if stats.pending_payments > 0 %}
+                <span class="px-1.5 py-0.5 rounded-full text-[10px] bg-rose-500 text-white font-black">{{ stats.pending_payments }}</span>
+            {% endif %}
+        </a>
+
+        <a href="{{ url_for('admin_dashboard', tab='notices') }}" 
+            class="px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 whitespace-nowrap transition-all
+            {% if active_tab == 'notices' %}bg-blue-600 text-white shadow-md shadow-blue-600/20{% else %}text-slate-600 hover:bg-slate-100{% endif %}">
+            <i class="fa-solid fa-bullhorn"></i>
+            <span>Notices & Circulars</span>
+        </a>
+
+        <a href="{{ url_for('admin_dashboard', tab='complaints') }}" 
+            class="px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 whitespace-nowrap transition-all
+            {% if active_tab == 'complaints' %}bg-blue-600 text-white shadow-md shadow-blue-600/20{% else %}text-slate-600 hover:bg-slate-100{% endif %}">
+            <i class="fa-solid fa-headset"></i>
+            <span>Complaints & Helpdesk</span>
+            {% if stats.open_complaints > 0 %}
+                <span class="px-1.5 py-0.5 rounded-full text-[10px] bg-amber-500 text-white font-black">{{ stats.open_complaints }}</span>
+            {% endif %}
+        </a>
+
+        <a href="{{ url_for('admin_dashboard', tab='visitors') }}" 
+            class="px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 whitespace-nowrap transition-all
+            {% if active_tab == 'visitors' %}bg-blue-600 text-white shadow-md shadow-blue-600/20{% else %}text-slate-600 hover:bg-slate-100{% endif %}">
+            <i class="fa-solid fa-person-shelter"></i>
+            <span>Gate & Visitors</span>
+        </a>
+
+        <a href="{{ url_for('admin_dashboard', tab='amenities') }}" 
+            class="px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 whitespace-nowrap transition-all
+            {% if active_tab == 'amenities' %}bg-blue-600 text-white shadow-md shadow-blue-600/20{% else %}text-slate-600 hover:bg-slate-100{% endif %}">
+            <i class="fa-solid fa-calendar-check"></i>
+            <span>Amenities</span>
+        </a>
+
+        <a href="{{ url_for('admin_dashboard', tab='settings') }}" 
+            class="px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 whitespace-nowrap transition-all
+            {% if active_tab == 'settings' %}bg-blue-600 text-white shadow-md shadow-blue-600/20{% else %}text-slate-600 hover:bg-slate-100{% endif %}">
+            <i class="fa-solid fa-gears"></i>
+            <span>Society Profile</span>
+        </a>
+    </div>
+
+    <!-- ==================== TAB 1: EXECUTIVE OVERVIEW ==================== -->
+    {% if active_tab == 'overview' %}
+    <div class="space-y-6">
+        <!-- 6 Metrics Cards -->
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-2">
+                <div class="w-8 h-8 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center text-sm">
+                    <i class="fa-solid fa-house-chimney-user"></i>
+                </div>
+                <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Total Residents</p>
+                <p class="text-2xl font-black text-slate-900">{{ stats.total_members }}</p>
+            </div>
+
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-2">
+                <div class="w-8 h-8 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center text-sm">
+                    <i class="fa-solid fa-user-clock"></i>
+                </div>
+                <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Pending Verify</p>
+                <p class="text-2xl font-black text-slate-900">{{ stats.pending_members }}</p>
+            </div>
+
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-2">
+                <div class="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center text-sm">
+                    <i class="fa-solid fa-indian-rupee-sign"></i>
+                </div>
+                <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Collected Dues</p>
+                <p class="text-2xl font-black text-emerald-600 font-mono">₹{{ "{:,.0f}".format(stats.total_payments) }}</p>
+            </div>
+
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-2">
+                <div class="w-8 h-8 rounded-xl bg-rose-100 text-rose-700 flex items-center justify-center text-sm">
+                    <i class="fa-solid fa-clock"></i>
+                </div>
+                <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Pending Pymts</p>
+                <p class="text-2xl font-black text-rose-600">{{ stats.pending_payments }}</p>
+            </div>
+
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-2">
+                <div class="w-8 h-8 rounded-xl bg-indigo-100 text-indigo-700 flex items-center justify-center text-sm">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                </div>
+                <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Open Tickets</p>
+                <p class="text-2xl font-black text-indigo-600">{{ stats.open_complaints }}</p>
+            </div>
+
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-2">
+                <div class="w-8 h-8 rounded-xl bg-teal-100 text-teal-700 flex items-center justify-center text-sm">
+                    <i class="fa-solid fa-id-badge"></i>
+                </div>
+                <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Gate Activity</p>
+                <p class="text-2xl font-black text-teal-600">{{ stats.active_visitors }}</p>
+            </div>
+        </div>
+
+        <!-- Quick Actions & Pending Attention -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Pending Payment Proofs waiting for admin -->
+            <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm space-y-4">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
+                        <i class="fa-solid fa-receipt text-rose-600"></i> Payment Proofs Awaiting Verification
+                    </h3>
+                    <a href="{{ url_for('admin_dashboard', tab='billing') }}" class="text-xs text-blue-600 font-bold hover:underline">View All &rarr;</a>
+                </div>
+
+                {% set pending_pymts = payments|selectattr('status', 'equalto', 'pending')|list %}
+                {% if pending_pymts %}
+                    <div class="space-y-3">
+                        {% for p in pending_pymts[:4] %}
+                            <div class="p-3.5 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-between gap-3">
+                                <div>
+                                    <p class="text-xs font-bold text-slate-800">{{ p.member_name }} ({{ p.wing }}-{{ p.flat_number }})</p>
+                                    <p class="text-[11px] text-slate-500 font-mono">{{ p.bill_title }} &bull; Ref: {{ p.transaction_ref }}</p>
+                                </div>
+                                <div class="text-right">
+                                    <span class="text-xs font-bold font-mono text-emerald-700">₹{{ "{:,.2f}".format(p.amount) }}</span>
+                                    <form action="{{ url_for('admin_review_payment', payment_id=p.id) }}" method="POST" class="mt-1">
+                                        <input type="hidden" name="status" value="approved">
+                                        <input type="hidden" name="admin_remarks" value="Directly approved from overview.">
+                                        <button type="submit" class="px-2 py-0.5 bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold rounded shadow-sm">
+                                            Approve
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-xs text-slate-400 py-6 text-center">No pending payment verification requests.</p>
+                {% endif %}
+            </div>
+
+            <!-- Open Complaints Attention -->
+            <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm space-y-4">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
+                        <i class="fa-solid fa-headset text-amber-500"></i> Urgent Complaints Needing Action
+                    </h3>
+                    <a href="{{ url_for('admin_dashboard', tab='complaints') }}" class="text-xs text-blue-600 font-bold hover:underline">Manage All &rarr;</a>
+                </div>
+
+                {% set open_comps = complaints|selectattr('status', 'in', ['pending', 'in_progress'])|list %}
+                {% if open_comps %}
+                    <div class="space-y-3">
+                        {% for c in open_comps[:4] %}
+                            <div class="p-3.5 bg-slate-50 rounded-xl border border-slate-200 space-y-1.5">
+                                <div class="flex items-center justify-between text-xs">
+                                    <span class="font-bold text-slate-800">{{ c.member_name }} (Flat {{ c.wing }}-{{ c.flat_number }})</span>
+                                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-full
+                                        {% if c.priority == 'Urgent' %}bg-rose-100 text-rose-800
+                                        {% elif c.priority == 'High' %}bg-amber-100 text-amber-800
+                                        {% else %}bg-blue-100 text-blue-800{% endif %}">
+                                        {{ c.priority }}
+                                    </span>
+                                </div>
+                                <p class="text-xs text-slate-600 font-semibold">{{ c.subject }}</p>
+                                <p class="text-[11px] text-slate-500 truncate">{{ c.description }}</p>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-xs text-slate-400 py-6 text-center">No open complaints at this moment.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- ==================== TAB 2: RESIDENT DIRECTORY ==================== -->
+    {% if active_tab == 'members' %}
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        <!-- Admin Add Resident Form -->
+        <div class="lg:col-span-1 space-y-6">
+            <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
+                <h2 class="text-base font-bold text-slate-900 mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-user-plus text-blue-600"></i> Add Resident to Society
+                </h2>
+
+                <form action="{{ url_for('admin_add_member') }}" method="POST" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Full Name *</label>
+                        <input type="text" name="name" required placeholder="e.g. Suresh Kulkarni" class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-300 rounded-xl">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Email Address *</label>
+                        <input type="email" name="email" required placeholder="suresh@example.com" class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-300 rounded-xl">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Phone Number</label>
+                        <input type="tel" name="phone" placeholder="+91 98200 11223" class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-300 rounded-xl">
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Wing</label>
+                            <input type="text" name="wing" placeholder="A" class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-300 rounded-xl uppercase font-bold">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Flat No. *</label>
+                            <input type="text" name="flat_number" required placeholder="302" class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-300 rounded-xl font-bold">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Initial Password</label>
+                        <input type="text" name="password" value="member123" required class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-300 rounded-xl font-mono">
+                    </div>
+
+                    <button type="submit" class="w-full py-2.5 px-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-xs transition-colors shadow-sm">
+                        <i class="fa-solid fa-plus mr-1"></i> Save Resident Record
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Resident Directory List -->
+        <div class="lg:col-span-2 space-y-4">
+            <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+                        <i class="fa-solid fa-users-viewfinder text-blue-600"></i> Society Flat Owners & Residents
+                    </h2>
+                    <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700">
+                        {{ members|length }} Registered Flats
+                    </span>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs">
+                        <thead>
+                            <tr class="border-b border-slate-200 text-slate-400 uppercase font-bold">
+                                <th class="pb-3">Flat</th>
+                                <th class="pb-3">Resident Name</th>
+                                <th class="pb-3">Contact</th>
+                                <th class="pb-3">Household</th>
+                                <th class="pb-3">Status</th>
+                                <th class="pb-3 text-right">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100">
+                            {% for m in members %}
+                                <tr class="hover:bg-slate-50/80 transition-colors">
+                                    <td class="py-3 font-bold text-slate-900 whitespace-nowrap">
+                                        <span class="px-2 py-1 rounded-lg bg-slate-100 border border-slate-200 font-mono">
+                                            {{ m.wing }}-{{ m.flat_number }}
+                                        </span>
+                                    </td>
+                                    <td class="py-3">
+                                        <p class="font-bold text-slate-800">{{ m.name }}</p>
+                                        <p class="text-[10px] text-slate-400">{{ m.email }}</p>
+                                    </td>
+                                    <td class="py-3 text-slate-600">{{ m.phone or '—' }}</td>
+                                    <td class="py-3 text-[11px] text-slate-500">
+                                        <span class="inline-flex items-center gap-1"><i class="fa-solid fa-users text-slate-400"></i> {{ m.family_count }} fam</span> &bull; 
+                                        <span class="inline-flex items-center gap-1"><i class="fa-solid fa-car text-slate-400"></i> {{ m.vehicle_count }} veh</span>
+                                    </td>
+                                    <td class="py-3">
+                                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase
+                                            {% if m.status == 'active' %}bg-emerald-100 text-emerald-800
+                                            {% elif m.status == 'pending' %}bg-amber-100 text-amber-800
+                                            {% else %}bg-slate-200 text-slate-700{% endif %}">
+                                            {{ m.status }}
+                                        </span>
+                                    </td>
+                                    <td class="py-3 text-right">
+                                        <form action="{{ url_for('admin_member_status', user_id=m.id) }}" method="POST" class="inline-flex gap-1">
+                                            {% if m.status == 'active' %}
+                                                <button type="submit" name="status" value="inactive" class="px-2 py-1 bg-slate-100 hover:bg-rose-50 hover:text-rose-600 text-slate-600 rounded text-[11px]" title="Deactivate">
+                                                    Deactivate
+                                                </button>
+                                            {% else %}
+                                                <button type="submit" name="status" value="active" class="px-2 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold rounded text-[11px]">
+                                                    Activate
+                                                </button>
+                                            {% endif %}
+                                        </form>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    {% endif %}
+
+    <!-- ==================== TAB 3: BILLING & PAYMENTS ==================== -->
+    {% if active_tab == 'billing' %}
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        <!-- Admin Issue Maintenance Bill Form -->
+        <div class="lg:col-span-1 space-y-6">
+            <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
+                <h2 class="text-base font-bold text-slate-900 mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-file-invoice text-blue-600"></i> Issue Maintenance Bill
+                </h2>
+
+                <form action="{{ url_for('admin_create_bill') }}" method="POST" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Billing Cycle Title *</label>
+                        <input type="text" name="title" required placeholder="e.g. Q1 Maintenance (Jan - Mar 2027)" class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-300 rounded-xl font-semibold">
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Month / Quarter *</label>
+                            <input type="text" name="billing_month" required placeholder="January 2027" class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-300 rounded-xl">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Amount per Flat (₹) *</label>
+                            <input type="number" step="0.01" name="amount" required placeholder="4500.00" class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-300 rounded-xl font-bold font-mono">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Payment Due Date *</label>
+                        <input type="date" name="due_date" required class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-300 rounded-xl">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Bill Description / Inclusions</label>
+                        <textarea name="description" rows="3" placeholder="Includes lift maintenance, water charges, 24/7 security, sinking fund contribution..." class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-300 rounded-xl"></textarea>
+                    </div>
+
+                    <button type="submit" class="w-full py-2.5 px-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-xs transition-colors shadow-sm">
+                        <i class="fa-solid fa-bullhorn mr-1"></i> Broadcast Bill to All Residents
+                    </button>
+                </form>
+            </div>
+
+            <!-- Existing Bills List -->
+            <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm space-y-3">
+                <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
+                    <i class="fa-solid fa-folder-open text-blue-600"></i> Issued Billing Cycles
+                </h3>
+                {% for b in bills %}
+                    <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs space-y-1">
+                        <div class="flex items-center justify-between font-bold">
+                            <span class="text-slate-800">{{ b.title }}</span>
+                            <span class="font-mono text-emerald-700">₹{{ "{:,.2f}".format(b.amount) }}</span>
+                        </div>
+                        <p class="text-[11px] text-slate-500">Month: {{ b.billing_month }} &bull; Due: {{ b.due_date }}</p>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Review Resident Payment Proofs -->
+        <div class="lg:col-span-2 space-y-4">
+            <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
+                <h2 class="text-base font-bold text-slate-900 mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-money-check-dollar text-blue-600"></i> Resident Payment Submissions
+                </h2>
+
+                {% if payments %}
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs">
+                            <thead>
+                                <tr class="border-b border-slate-200 text-slate-400 uppercase font-bold">
+                                    <th class="pb-3">Resident & Flat</th>
+                                    <th class="pb-3">Bill Title</th>
+                                    <th class="pb-3">Amount</th>
+                                    <th class="pb-3">Method & Txn Ref</th>
+                                    <th class="pb-3">Status</th>
+                                    <th class="pb-3 text-right">Review Action</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100">
+                                {% for p in payments %}
+                                    <tr class="hover:bg-slate-50/80 transition-colors">
+                                        <td class="py-3">
+                                            <p class="font-bold text-slate-800">{{ p.member_name }}</p>
+                                            <span class="font-mono font-semibold text-slate-500">{{ p.wing }}-{{ p.flat_number }}</span>
+                                        </td>
+                                        <td class="py-3">
+                                            <p class="font-medium text-slate-700">{{ p.bill_title }}</p>
+                                            <span class="text-[10px] text-slate-400">{{ p.payment_date }}</span>
+                                        </td>
+                                        <td class="py-3 font-mono font-bold text-slate-900">₹{{ "{:,.2f}".format(p.amount) }}</td>
+                                        <td class="py-3 font-mono text-slate-600">
+                                            {{ p.transaction_ref }}
+                                            <span class="block text-[10px] text-slate-400">via {{ p.payment_method }}</span>
+                                        </td>
+                                        <td class="py-3">
+                                            <span class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase
+                                                {% if p.status == 'approved' %}bg-emerald-100 text-emerald-800
+                                                {% elif p.status == 'pending' %}bg-amber-100 text-amber-800
+                                                {% else %}bg-rose-100 text-rose-800{% endif %}">
+                                                {{ p.status }}
+                                            </span>
+                                        </td>
+                                        <td class="py-3 text-right">
+                                            <div class="flex items-center justify-end gap-1.5">
+                                                <a href="{{ url_for('view_receipt', payment_id=p.id) }}" target="_blank" class="p-1.5 text-slate-500 hover:text-blue-600 rounded hover:bg-slate-100" title="View Printable Receipt">
+                                                    <i class="fa-solid fa-receipt text-xs"></i>
+                                                </a>
+                                                <form action="{{ url_for('admin_review_payment', payment_id=p.id) }}" method="POST" class="inline-flex gap-1">
+                                                    {% if p.status != 'approved' %}
+                                                        <button type="submit" name="status" value="approved" class="px-2 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-[10px] font-bold" title="Approve Payment">
+                                                            Approve
+                                                        </button>
+                                                    {% endif %}
+                                                    {% if p.status != 'rejected' %}
+                                                        <button type="submit" name="status" value="rejected" class="px-2 py-1 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded text-[10px] font-bold" title="Reject Payment">
+                                                            Reject
+                                                        </button>
+                                                    {% endif %}
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-xs text-slate-400 py-6 text-center">No payment submissions received yet.</p>
+                {% endif %}
+            </div>
+        </div>
+
+    </div>
+    {% endif %}
+
+    <!-- ==================== TAB 4: NOTICES & CIRCULARS ==================== -->
+    {% if active_tab == 'notices' %}
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        <!-- Admin Publish Notice Form -->
+        <div class="lg:col-span-1 space-y-6">
+            <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
+                <h2 class="text-base font-bold text-slate-900 mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-bullhorn text-blue-600"></i> Broadcast Notice
+                </h2>
+
+                <form action="{{ url_for('admin_create_notice') }}" method="POST" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Notice Headline *</label>
+                        <input type="text" name="title" required placeholder="e.g. Scheduled Power Shutdown" class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-300 rounded-xl font-bold">
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Category *</label>
+                            <select name="category" required class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-300 rounded-xl">
+                                <option value="General">General</option>
+                                <option value="Maintenance">Maintenance</option>
+                                <option value="Event">Event / Celebration</option>
+                                <option value="AGM">General Meeting (AGM)</option>
+                                <option value="Security">Security & Rules</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Urgency Level *</label>
+                            <select name="urgency" required class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-300 rounded-xl">
+                                <option value="Normal">Normal</option>
+                                <option value="Important">Important</option>
+                                <option value="Urgent">Urgent</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Posted By Signature</label>
+                        <input type="text" name="posted_by" value="Society Managing Committee" class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-300 rounded-xl">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Detailed Content *</label>
+                        <textarea name="content" rows="5" required placeholder="Type the announcement to be displayed on member notice boards..." class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-300 rounded-xl leading-relaxed"></textarea>
+                    </div>
+
+                    <button type="submit" class="w-full py-2.5 px-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-xs transition-colors shadow-sm">
+                        <i class="fa-solid fa-paper-plane mr-1"></i> Publish Announcement
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Active Notices List -->
+        <div class="lg:col-span-2 space-y-4">
+            <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+                        <i class="fa-solid fa-newspaper text-blue-600"></i> Active Announcements & Circulars
+                    </h2>
+                    <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700">
+                        {{ notices|length }} Published
+                    </span>
+                </div>
+
+                {% if notices %}
+                    <div class="space-y-4">
+                        {% for n in notices %}
+                            <div class="p-4 rounded-xl border border-slate-200 bg-slate-50/50 space-y-2">
+                                <div class="flex items-start justify-between gap-3">
+                                    <div>
+                                        <div class="flex items-center gap-2">
+                                            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full uppercase
+                                                {% if n.urgency == 'Urgent' %}bg-rose-100 text-rose-800
+                                                {% elif n.urgency == 'Important' %}bg-amber-100 text-amber-800
+                                                {% else %}bg-slate-200 text-slate-700{% endif %}">
+                                                {{ n.urgency }}
+                                            </span>
+                                            <span class="text-xs font-semibold px-2 py-0.5 rounded-md bg-blue-50 text-blue-700">
+                                                {{ n.category }}
+                                            </span>
+                                            <span class="text-[11px] text-slate-400">{{ n.created_at[:16] }}</span>
+                                        </div>
+                                        <h3 class="text-sm font-bold text-slate-900 mt-1.5">{{ n.title }}</h3>
+                                    </div>
+                                    <form action="{{ url_for('admin_delete_notice', notice_id=n.id) }}" method="POST" onsubmit="return confirm('Remove this notice?')">
+                                        <button type="submit" class="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50" title="Delete Notice">
+                                            <i class="fa-solid fa-trash-can text-xs"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                                <p class="text-xs text-slate-600 whitespace-pre-line leading-relaxed">{{ n.content }}</p>
+                                <p class="text-[10px] text-slate-400 pt-2 border-t border-slate-200">Posted by: {{ n.posted_by }}</p>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-xs text-slate-400 py-6 text-center">No notices published yet.</p>
+                {% endif %}
+            </div>
+        </div>
+
+    </div>
+    {% endif %}
+
+    <!-- ==================== TAB 5: COMPLAINTS & HELPDESK ==================== -->
+    {% if active_tab == 'complaints' %}
+    <div class="space-y-6">
+        <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+                    <i class="fa-solid fa-headset text-blue-600"></i> Resident Complaints & Service Tickets
+                </h2>
+                <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700">
+                    {{ complaints|length }} Total Tickets
+                </span>
+            </div>
+
+            {% if complaints %}
+                <div class="space-y-4">
+                    {% for c in complaints %}
+                        <div class="p-5 rounded-2xl border border-slate-200 bg-slate-50/50 space-y-3">
+                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <span class="text-xs font-bold font-mono text-slate-400">#CMP-{{ c.id }}</span>
+                                    <span class="font-bold text-xs text-slate-900">
+                                        {{ c.member_name }} (Flat {{ c.wing }}-{{ c.flat_number }})
+                                    </span>
+                                    <span class="text-[11px] text-slate-500">&bull; Ph: {{ c.member_phone }}</span>
+                                    <span class="text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase
+                                        {% if c.priority == 'Urgent' %}bg-rose-100 text-rose-800
+                                        {% elif c.priority == 'High' %}bg-amber-100 text-amber-800
+                                        {% else %}bg-slate-200 text-slate-700{% endif %}">
+                                        {{ c.priority }} Priority
+                                    </span>
+                                    <span class="text-xs font-semibold px-2 py-0.5 rounded-md bg-blue-50 text-blue-700">
+                                        {{ c.category }}
+                                    </span>
+                                </div>
+                                <span class="text-[11px] text-slate-400">{{ c.created_at[:16] }}</span>
+                            </div>
+
+                            <div class="bg-white p-3.5 rounded-xl border border-slate-200">
+                                <h4 class="text-xs font-bold text-slate-900">{{ c.subject }}</h4>
+                                <p class="text-xs text-slate-600 mt-1 leading-relaxed">{{ c.description }}</p>
+                            </div>
+
+                            <!-- Admin Resolution / Reply Form -->
+                            <form action="{{ url_for('admin_update_complaint', comp_id=c.id) }}" method="POST" class="bg-blue-50/60 p-4 rounded-xl border border-blue-100 space-y-3">
+                                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                                    <div class="flex items-center gap-3">
+                                        <label class="text-xs font-bold text-blue-900 uppercase">Status:</label>
+                                        <select name="status" class="px-2.5 py-1 text-xs bg-white border border-blue-200 rounded-lg font-bold">
+                                            <option value="pending" {% if c.status == 'pending' %}selected{% endif %}>Pending</option>
+                                            <option value="in_progress" {% if c.status == 'in_progress' %}selected{% endif %}>In Progress</option>
+                                            <option value="resolved" {% if c.status == 'resolved' %}selected{% endif %}>Resolved</option>
+                                            <option value="rejected" {% if c.status == 'rejected' %}selected{% endif %}>Rejected</option>
+                                        </select>
+                                    </div>
+                                    <button type="submit" class="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold transition-colors shadow-sm self-end">
+                                        <i class="fa-solid fa-floppy-disk mr-1"></i> Update Ticket
+                                    </button>
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] font-bold text-blue-900 uppercase mb-1">Committee Reply / Technician Resolution Notes:</label>
+                                    <textarea name="admin_reply" rows="2" placeholder="e.g. Electrician scheduled for inspection today at 4:00 PM..." class="w-full px-3 py-1.5 text-xs bg-white border border-blue-200 rounded-lg">{{ c.admin_reply or '' }}</textarea>
+                                </div>
+                            </form>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="text-xs text-slate-400 py-6 text-center">No complaints filed by residents.</p>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- ==================== TAB 6: GATE & VISITORS ==================== -->
+    {% if active_tab == 'visitors' %}
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        <!-- Admin Walk-in Visitor Entry Form -->
+        <div class="lg:col-span-1 space-y-6">
+            <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
+                <h2 class="text-base font-bold text-slate-900 mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-person-walking-dashed-line-arrow-right text-blue-600"></i> Record Gate Entry (Security)
+                </h2>
+
+                <form action="{{ url_for('admin_add_visitor') }}" method="POST" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Visiting Flat Resident *</label>
+                        <select name="user_id" required class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-300 rounded-xl">
+                            <option value="">-- Select Resident Flat --</option>
+                            {% for m in members %}
+                                <option value="{{ m.id }}">{{ m.wing }}-{{ m.flat_number }} &bull; {{ m.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Visitor Full Name *</label>
+                        <input type="text" name="visitor_name" required placeholder="Visitor Name" class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-300 rounded-xl">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Phone Number</label>
+                        <input type="tel" name="visitor_phone" placeholder="+91 98000 00000" class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-300 rounded-xl">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Vehicle Registration No.</label>
+                        <input type="text" name="vehicle_number" placeholder="MH-02-CB-1234" class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-300 rounded-xl uppercase">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Purpose</label>
+                        <input type="text" name="purpose" placeholder="Delivery / Guest / Repair" class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-300 rounded-xl">
+                    </div>
+
+                    <button type="submit" class="w-full py-2.5 px-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-xs transition-colors shadow-sm">
+                        <i class="fa-solid fa-door-open mr-1"></i> Check In Visitor at Gate
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Visitor Logs Table -->
+        <div class="lg:col-span-2 space-y-4">
+            <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
+                <h2 class="text-base font-bold text-slate-900 mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-list text-blue-600"></i> Main Security Gate Visitor Register
+                </h2>
+
+                {% if visitors %}
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs">
+                            <thead>
+                                <tr class="border-b border-slate-200 text-slate-400 uppercase font-bold">
+                                    <th class="pb-3">Visitor Name</th>
+                                    <th class="pb-3">Visiting Flat</th>
+                                    <th class="pb-3">Vehicle / Phone</th>
+                                    <th class="pb-3">Status</th>
+                                    <th class="pb-3 text-right">Gate Action</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100">
+                                {% for v in visitors %}
+                                    <tr class="hover:bg-slate-50/80 transition-colors">
+                                        <td class="py-3">
+                                            <p class="font-bold text-slate-800">{{ v.visitor_name }}</p>
+                                            <span class="text-[10px] text-slate-400">{{ v.purpose or 'General visit' }}</span>
+                                        </td>
+                                        <td class="py-3 font-semibold text-slate-700">
+                                            {{ v.wing }}-{{ v.flat_number }}
+                                            <span class="block text-[10px] text-slate-400">{{ v.member_name }}</span>
+                                        </td>
+                                        <td class="py-3 font-mono text-slate-600">
+                                            {{ v.vehicle_number or 'Walking' }}
+                                            {% if v.visitor_phone %}<span class="block text-[10px] text-slate-400">{{ v.visitor_phone }}</span>{% endif %}
+                                        </td>
+                                        <td class="py-3">
+                                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase
+                                                {% if v.status == 'checked_in' %}bg-blue-100 text-blue-800
+                                                {% elif v.status == 'checked_out' %}bg-slate-200 text-slate-700
+                                                {% else %}bg-emerald-100 text-emerald-800{% endif %}">
+                                                {{ v.status|replace('_', ' ') }}
+                                            </span>
+                                        </td>
+                                        <td class="py-3 text-right">
+                                            <form action="{{ url_for('admin_visitor_status', vis_id=v.id) }}" method="POST" class="inline-flex gap-1">
+                                                {% if v.status == 'pre_approved' %}
+                                                    <button type="submit" name="status" value="checked_in" class="px-2 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-[10px] font-bold">
+                                                        Check In
+                                                    </button>
+                                                {% elif v.status == 'checked_in' %}
+                                                    <button type="submit" name="status" value="checked_out" class="px-2 py-1 bg-slate-600 hover:bg-slate-700 text-white rounded text-[10px] font-bold">
+                                                        Check Out
+                                                    </button>
+                                                {% else %}
+                                                    <span class="text-[10px] text-slate-400 italic">Completed</span>
+                                                {% endif %}
+                                            </form>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-xs text-slate-400 py-6 text-center">No visitor records logged.</p>
+                {% endif %}
+            </div>
+        </div>
+
+    </div>
+    {% endif %}
+
+    <!-- ==================== TAB 7: AMENITY BOOKINGS ==================== -->
+    {% if active_tab == 'amenities' %}
+    <div class="space-y-6">
+        <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
+            <h2 class="text-base font-bold text-slate-900 mb-4 flex items-center gap-2">
+                <i class="fa-solid fa-calendar-check text-blue-600"></i> Amenity Reservation Requests
+            </h2>
+
+            {% if bookings %}
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs">
+                        <thead>
+                            <tr class="border-b border-slate-200 text-slate-400 uppercase font-bold">
+                                <th class="pb-3">Amenity</th>
+                                <th class="pb-3">Resident</th>
+                                <th class="pb-3">Date & Slot</th>
+                                <th class="pb-3">Purpose</th>
+                                <th class="pb-3">Status</th>
+                                <th class="pb-3 text-right">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100">
+                            {% for b in bookings %}
+                                <tr class="hover:bg-slate-50/80 transition-colors">
+                                    <td class="py-3 font-bold text-slate-900">{{ b.amenity_name }}</td>
+                                    <td class="py-3">
+                                        <p class="font-bold text-slate-800">{{ b.member_name }}</p>
+                                        <span class="font-mono text-slate-500">{{ b.wing }}-{{ b.flat_number }}</span>
+                                    </td>
+                                    <td class="py-3 font-semibold text-slate-700">
+                                        {{ b.booking_date }}
+                                        <span class="block text-[10px] text-slate-400">{{ b.time_slot }}</span>
+                                    </td>
+                                    <td class="py-3 text-slate-600">{{ b.purpose or 'Personal Gathering' }}</td>
+                                    <td class="py-3">
+                                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase
+                                            {% if b.status == 'approved' %}bg-emerald-100 text-emerald-800
+                                            {% elif b.status == 'rejected' %}bg-rose-100 text-rose-800
+                                            {% else %}bg-amber-100 text-amber-800{% endif %}">
+                                            {{ b.status }}
+                                        </span>
+                                    </td>
+                                    <td class="py-3 text-right">
+                                        <form action="{{ url_for('admin_review_amenity', booking_id=b.id) }}" method="POST" class="inline-flex gap-1">
+                                            {% if b.status != 'approved' %}
+                                                <button type="submit" name="status" value="approved" class="px-2 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-[10px] font-bold">
+                                                    Approve
+                                                </button>
+                                            {% endif %}
+                                            {% if b.status != 'rejected' %}
+                                                <button type="submit" name="status" value="rejected" class="px-2 py-1 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded text-[10px] font-bold">
+                                                    Reject
+                                                </button>
+                                            {% endif %}
+                                        </form>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p class="text-xs text-slate-400 py-6 text-center">No amenity bookings requested yet.</p>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- ==================== TAB 8: SOCIETY PROFILE & SETTINGS ==================== -->
+    {% if active_tab == 'settings' %}
+    <div class="max-w-3xl mx-auto space-y-6">
+        <div class="bg-white rounded-2xl p-6 sm:p-8 border border-slate-200 shadow-sm space-y-6">
+            <div class="border-b border-slate-200 pb-4">
+                <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                    <i class="fa-solid fa-building-circle-check text-blue-600"></i> Society Profile & Official Details
+                </h2>
+                <p class="text-xs text-slate-500 mt-1">Configure society name, address, contact numbers, official UPI ID, and resident guidelines.</p>
+            </div>
+
+            <form action="{{ url_for('admin_update_society') }}" method="POST" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Society Name *</label>
+                    <input type="text" name="name" value="{{ society.name if society else '' }}" required class="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-300 rounded-xl font-bold">
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Registration Number</label>
+                        <input type="text" name="registration_no" value="{{ society.registration_no if society else '' }}" class="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-300 rounded-xl font-mono">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Official Maintenance UPI ID *</label>
+                        <input type="text" name="upi_id" value="{{ society.upi_id if society else '' }}" required class="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-300 rounded-xl font-mono text-emerald-700 font-bold">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Contact Phone</label>
+                        <input type="tel" name="contact_phone" value="{{ society.contact_phone if society else '' }}" class="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-300 rounded-xl">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Contact Email</label>
+                        <input type="email" name="contact_email" value="{{ society.contact_email if society else '' }}" class="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-300 rounded-xl">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Full Postal Address</label>
+                    <input type="text" name="address" value="{{ society.address if society else '' }}" class="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-300 rounded-xl">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Society Rules, Guidelines & Bylaws</label>
+                    <textarea name="rules_text" rows="5" class="w-full px-3.5 py-2 text-xs bg-slate-50 border border-slate-300 rounded-xl leading-relaxed">{{ society.rules_text if society else '' }}</textarea>
+                </div>
+
+                <button type="submit" class="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-xs transition-colors shadow-sm">
+                    <i class="fa-solid fa-floppy-disk mr-1"></i> Save Society Configuration
+                </button>
+            </form>
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}

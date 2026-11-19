@@ -1,0 +1,190 @@
+{% extends "base.html" %}
+
+{% block title %}AapliSociety - Smart Housing Society Portal{% endblock %}
+
+{% block content %}
+<div class="py-6 sm:py-12">
+    <!-- Hero Header -->
+    <div class="text-center max-w-3xl mx-auto space-y-4">
+        <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            AapliSociety &bull; Next-Gen Resident & Committee Platform
+        </div>
+        <h1 class="text-3xl sm:text-5xl font-extrabold text-slate-900 tracking-tight leading-tight">
+            Welcome to <span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-teal-600">AapliSociety</span>
+        </h1>
+        <p class="text-sm sm:text-base font-semibold text-slate-700">
+            {{ society.name if society else 'Co-operative Housing Society Management System' }}
+        </p>
+        <p class="text-xs sm:text-sm text-slate-600 leading-relaxed max-w-2xl mx-auto">
+            A unified digital ecosystem for seamless community living. Choose your dedicated access portal below to view, manage, and submit your society records.
+        </p>
+        {% if society.address %}
+            <p class="text-xs text-slate-400 flex items-center justify-center gap-1.5">
+                <i class="fa-solid fa-location-dot text-slate-400"></i>
+                {{ society.address }} &bull; Reg: {{ society.registration_no }}
+            </p>
+        {% endif %}
+    </div>
+
+    <!-- Dual Portal Choice Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-10 max-w-5xl mx-auto">
+        <!-- 1. Society Member Portal Card -->
+        <div class="bg-white rounded-3xl p-8 border-2 border-emerald-100 shadow-xl shadow-emerald-500/5 hover:border-emerald-400 hover:shadow-2xl hover:shadow-emerald-500/10 transition-all flex flex-col justify-between relative overflow-hidden group">
+            <div class="absolute top-0 right-0 w-32 h-32 bg-emerald-50 rounded-full -mr-12 -mt-12 transition-transform group-hover:scale-125"></div>
+            
+            <div class="relative z-10 space-y-6">
+                <div class="flex items-center justify-between">
+                    <div class="w-14 h-14 rounded-2xl bg-emerald-500 text-white flex items-center justify-center text-2xl shadow-lg shadow-emerald-500/30">
+                        <i class="fa-solid fa-house-chimney-user"></i>
+                    </div>
+                    <span class="text-xs font-bold uppercase tracking-wider px-3 py-1 bg-emerald-50 text-emerald-700 rounded-full border border-emerald-200">
+                        Residents & Flat Owners
+                    </span>
+                </div>
+
+                <div>
+                    <h2 class="text-2xl font-bold text-slate-900 group-hover:text-emerald-700 transition-colors">
+                        Society Member Portal
+                    </h2>
+                    <p class="text-sm text-slate-600 mt-2 leading-relaxed">
+                        Complete self-service dashboard for society residents. Submit and keep your household information up to date.
+                    </p>
+                </div>
+
+                <!-- Feature bullet points -->
+                <ul class="space-y-2.5 text-xs text-slate-600 border-t border-slate-100 pt-4">
+                    <li class="flex items-center gap-2.5">
+                        <i class="fa-solid fa-check text-emerald-500"></i>
+                        <span>Register family members & vehicle parking slots</span>
+                    </li>
+                    <li class="flex items-center gap-2.5">
+                        <i class="fa-solid fa-check text-emerald-500"></i>
+                        <span>View maintenance bills & submit payment proofs</span>
+                    </li>
+                    <li class="flex items-center gap-2.5">
+                        <i class="fa-solid fa-check text-emerald-500"></i>
+                        <span>File complaints & service requests with live tracking</span>
+                    </li>
+                    <li class="flex items-center gap-2.5">
+                        <i class="fa-solid fa-check text-emerald-500"></i>
+                        <span>Pre-approve visitors & delivery gate passes</span>
+                    </li>
+                    <li class="flex items-center gap-2.5">
+                        <i class="fa-solid fa-check text-emerald-500"></i>
+                        <span>Reserve clubhouse & society amenities</span>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="mt-8 pt-6 border-t border-slate-100 space-y-3 relative z-10">
+                <a href="{{ url_for('login_member') }}" class="w-full py-3.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl text-center shadow-lg shadow-emerald-600/20 transition-all flex items-center justify-center gap-2 text-sm">
+                    <span>Enter Member Portal</span>
+                    <i class="fa-solid fa-arrow-right text-xs"></i>
+                </a>
+                <div class="flex items-center justify-between text-xs text-slate-500 px-1">
+                    <span>New resident in this society?</span>
+                    <a href="{{ url_for('register_member') }}" class="font-semibold text-emerald-600 hover:underline">
+                        Register Flat Account &rarr;
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. Management Admin Portal Card -->
+        <div class="bg-white rounded-3xl p-8 border-2 border-blue-100 shadow-xl shadow-blue-500/5 hover:border-blue-400 hover:shadow-2xl hover:shadow-blue-500/10 transition-all flex flex-col justify-between relative overflow-hidden group">
+            <div class="absolute top-0 right-0 w-32 h-32 bg-blue-50 rounded-full -mr-12 -mt-12 transition-transform group-hover:scale-125"></div>
+            
+            <div class="relative z-10 space-y-6">
+                <div class="flex items-center justify-between">
+                    <div class="w-14 h-14 rounded-2xl bg-blue-600 text-white flex items-center justify-center text-2xl shadow-lg shadow-blue-500/30">
+                        <i class="fa-solid fa-shield-halved"></i>
+                    </div>
+                    <span class="text-xs font-bold uppercase tracking-wider px-3 py-1 bg-blue-50 text-blue-700 rounded-full border border-blue-200">
+                        Committee & Management
+                    </span>
+                </div>
+
+                <div>
+                    <h2 class="text-2xl font-bold text-slate-900 group-hover:text-blue-700 transition-colors">
+                        Management Admin Portal
+                    </h2>
+                    <p class="text-sm text-slate-600 mt-2 leading-relaxed">
+                        Full administrative control for society office bearers, managers, and committee staff.
+                    </p>
+                </div>
+
+                <!-- Feature bullet points -->
+                <ul class="space-y-2.5 text-xs text-slate-600 border-t border-slate-100 pt-4">
+                    <li class="flex items-center gap-2.5">
+                        <i class="fa-solid fa-check text-blue-500"></i>
+                        <span>Manage resident directory, wings, & flat records</span>
+                    </li>
+                    <li class="flex items-center gap-2.5">
+                        <i class="fa-solid fa-check text-blue-500"></i>
+                        <span>Issue quarterly/monthly maintenance billing cycles</span>
+                    </li>
+                    <li class="flex items-center gap-2.5">
+                        <i class="fa-solid fa-check text-blue-500"></i>
+                        <span>Review, approve & receipt resident payment records</span>
+                    </li>
+                    <li class="flex items-center gap-2.5">
+                        <i class="fa-solid fa-check text-blue-500"></i>
+                        <span>Publish announcements & emergency circulars</span>
+                    </li>
+                    <li class="flex items-center gap-2.5">
+                        <i class="fa-solid fa-check text-blue-500"></i>
+                        <span>Resolve complaints & oversee security gate check-ins</span>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="mt-8 pt-6 border-t border-slate-100 space-y-3 relative z-10">
+                <a href="{{ url_for('login_admin') }}" class="w-full py-3.5 px-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl text-center shadow-lg shadow-blue-600/20 transition-all flex items-center justify-center gap-2 text-sm">
+                    <span>Enter Admin Portal</span>
+                    <i class="fa-solid fa-arrow-right text-xs"></i>
+                </a>
+                <div class="flex items-center justify-between text-xs text-slate-500 px-1">
+                    <span>New committee member?</span>
+                    <a href="{{ url_for('register_admin') }}" class="font-semibold text-blue-600 hover:underline">
+                        Register with Admin Passkey &rarr;
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Demo Testing Information Banner -->
+    <div class="max-w-4xl mx-auto mt-12 bg-gradient-to-r from-slate-900 to-slate-800 text-white rounded-2xl p-6 shadow-xl">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div class="space-y-1">
+                <div class="flex items-center gap-2 text-amber-400 text-xs font-bold uppercase tracking-wider">
+                    <i class="fa-solid fa-key"></i>
+                    <span>Quick Demo Credentials</span>
+                </div>
+                <p class="text-xs text-slate-300">
+                    Pre-seeded test accounts are ready so you can test both portals immediately:
+                </p>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-3 text-xs">
+                    <div class="bg-white/10 p-3 rounded-xl border border-white/10">
+                        <div class="text-emerald-400 font-bold mb-1 flex items-center gap-1.5">
+                            <i class="fa-solid fa-house-user"></i> Member Portal
+                        </div>
+                        <p class="text-slate-300">Email: <span class="font-mono text-white select-all">rahul@society.com</span></p>
+                        <p class="text-slate-300">Password: <span class="font-mono text-white select-all">member123</span></p>
+                        <p class="text-slate-400 text-[10px] mt-1">Flat: A-402 (Has pre-saved family, vehicles & bills)</p>
+                    </div>
+                    <div class="bg-white/10 p-3 rounded-xl border border-white/10">
+                        <div class="text-blue-400 font-bold mb-1 flex items-center gap-1.5">
+                            <i class="fa-solid fa-shield-halved"></i> Admin Portal
+                        </div>
+                        <p class="text-slate-300">Email: <span class="font-mono text-white select-all">admin@society.com</span></p>
+                        <p class="text-slate-300">Password: <span class="font-mono text-white select-all">admin123</span></p>
+                        <p class="text-slate-400 text-[10px] mt-1">Admin Passkey for registration: <span class="font-mono text-amber-300">SOCIETY2026</span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

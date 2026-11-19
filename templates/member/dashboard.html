@@ -1,0 +1,798 @@
+{% extends "base.html" %}
+
+{% block title %}Member Dashboard - {{ current_user.name }}{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+    <!-- Member Welcome Banner -->
+    <div class="bg-gradient-to-r from-emerald-700 via-teal-700 to-emerald-900 rounded-3xl p-6 sm:p-8 text-white shadow-xl relative overflow-hidden">
+        <div class="absolute -right-10 -bottom-10 opacity-10 text-9xl">
+            <i class="fa-solid fa-house-chimney-user"></i>
+        </div>
+        <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div class="space-y-2">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-200 text-xs font-semibold backdrop-blur-sm border border-emerald-400/20">
+                    <i class="fa-solid fa-circle-check text-emerald-400"></i>
+                    Society Member &bull; {{ current_user.status|capitalize }} Resident
+                </div>
+                <h1 class="text-2xl sm:text-4xl font-extrabold tracking-tight">
+                    Welcome, {{ current_user.name }}
+                </h1>
+                <p class="text-emerald-100/80 text-xs sm:text-sm flex flex-wrap items-center gap-3">
+                    <span class="flex items-center gap-1.5"><i class="fa-solid fa-door-open"></i> Flat: <strong>{{ current_user.wing }}-{{ current_user.flat_number }}</strong></span>
+                    <span>&bull;</span>
+                    <span class="flex items-center gap-1.5"><i class="fa-solid fa-phone"></i> {{ current_user.phone or 'No phone added' }}</span>
+                    <span>&bull;</span>
+                    <span class="flex items-center gap-1.5"><i class="fa-solid fa-envelope"></i> {{ current_user.email }}</span>
+                </p>
+            </div>
+
+            <!-- Quick Stats in Banner -->
+            <div class="flex items-center gap-3 sm:gap-4">
+                <div class="bg-white/10 backdrop-blur-md px-4 py-3 rounded-2xl border border-white/10 text-center min-w-[90px]">
+                    <span class="text-xs text-emerald-200 block">Family</span>
+                    <span class="text-xl sm:text-2xl font-black">{{ family|length }}</span>
+                </div>
+                <div class="bg-white/10 backdrop-blur-md px-4 py-3 rounded-2xl border border-white/10 text-center min-w-[90px]">
+                    <span class="text-xs text-emerald-200 block">Vehicles</span>
+                    <span class="text-xl sm:text-2xl font-black">{{ vehicles|length }}</span>
+                </div>
+                <div class="bg-white/10 backdrop-blur-md px-4 py-3 rounded-2xl border border-white/10 text-center min-w-[90px]">
+                    <span class="text-xs text-emerald-200 block">Complaints</span>
+                    <span class="text-xl sm:text-2xl font-black">{{ complaints|length }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div class="border-b border-slate-200 bg-white rounded-2xl p-2 shadow-sm flex items-center gap-2 overflow-x-auto">
+        <a href="{{ url_for('member_dashboard', tab='overview') }}" 
+            class="px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 whitespace-nowrap transition-all
+            {% if active_tab == 'overview' %}bg-emerald-600 text-white shadow-md shadow-emerald-600/20{% else %}text-slate-600 hover:bg-slate-100{% endif %}">
+            <i class="fa-solid fa-bullhorn"></i>
+            <span>Overview & Notices</span>
+        </a>
+
+        <a href="{{ url_for('member_dashboard', tab='flat') }}" 
+            class="px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 whitespace-nowrap transition-all
+            {% if active_tab == 'flat' %}bg-emerald-600 text-white shadow-md shadow-emerald-600/20{% else %}text-slate-600 hover:bg-slate-100{% endif %}">
+            <i class="fa-solid fa-users"></i>
+            <span>My Flat & Household</span>
+        </a>
+
+        <a href="{{ url_for('member_dashboard', tab='maintenance') }}" 
+            class="px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 whitespace-nowrap transition-all
+            {% if active_tab == 'maintenance' %}bg-emerald-600 text-white shadow-md shadow-emerald-600/20{% else %}text-slate-600 hover:bg-slate-100{% endif %}">
+            <i class="fa-solid fa-receipt"></i>
+            <span>Maintenance & Dues</span>
+        </a>
+
+        <a href="{{ url_for('member_dashboard', tab='complaints') }}" 
+            class="px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 whitespace-nowrap transition-all
+            {% if active_tab == 'complaints' %}bg-emerald-600 text-white shadow-md shadow-emerald-600/20{% else %}text-slate-600 hover:bg-slate-100{% endif %}">
+            <i class="fa-solid fa-headset"></i>
+            <span>Complaints & Helpdesk</span>
+        </a>
+
+        <a href="{{ url_for('member_dashboard', tab='visitors') }}" 
+            class="px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 whitespace-nowrap transition-all
+            {% if active_tab == 'visitors' %}bg-emerald-600 text-white shadow-md shadow-emerald-600/20{% else %}text-slate-600 hover:bg-slate-100{% endif %}">
+            <i class="fa-solid fa-id-badge"></i>
+            <span>Visitors & Gate Pass</span>
+        </a>
+
+        <a href="{{ url_for('member_dashboard', tab='amenities') }}" 
+            class="px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 whitespace-nowrap transition-all
+            {% if active_tab == 'amenities' %}bg-emerald-600 text-white shadow-md shadow-emerald-600/20{% else %}text-slate-600 hover:bg-slate-100{% endif %}">
+            <i class="fa-solid fa-calendar-check"></i>
+            <span>Amenity Bookings</span>
+        </a>
+    </div>
+
+    <!-- ==================== TAB 1: OVERVIEW & NOTICES ==================== -->
+    {% if active_tab == 'overview' %}
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Announcements list -->
+        <div class="lg:col-span-2 space-y-4">
+            <div class="flex items-center justify-between">
+                <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                    <i class="fa-solid fa-newspaper text-emerald-600"></i> Society Notice Board
+                </h2>
+                <span class="text-xs text-slate-500">{{ notices|length }} announcements</span>
+            </div>
+
+            {% if notices %}
+                <div class="space-y-4">
+                    {% for notice in notices %}
+                        <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+                            <div class="flex items-start justify-between gap-3">
+                                <div class="space-y-1">
+                                    <div class="flex flex-wrap items-center gap-2">
+                                        <span class="text-xs font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full
+                                            {% if notice.urgency == 'Urgent' %}bg-rose-100 text-rose-800 border border-rose-200
+                                            {% elif notice.urgency == 'Important' %}bg-amber-100 text-amber-800 border border-amber-200
+                                            {% else %}bg-slate-100 text-slate-700{% endif %}">
+                                            {{ notice.urgency }}
+                                        </span>
+                                        <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700">
+                                            {{ notice.category }}
+                                        </span>
+                                    </div>
+                                    <h3 class="text-base font-bold text-slate-900 mt-2">{{ notice.title }}</h3>
+                                </div>
+                                <span class="text-[11px] text-slate-400 whitespace-nowrap">{{ notice.created_at[:10] }}</span>
+                            </div>
+                            <p class="text-sm text-slate-600 mt-3 whitespace-pre-line leading-relaxed">{{ notice.content }}</p>
+                            <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-400">
+                                <span><i class="fa-solid fa-bullhorn text-slate-400 mr-1"></i> Posted by: {{ notice.posted_by }}</span>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="bg-white rounded-2xl p-8 text-center text-slate-400 border border-slate-200">
+                    <i class="fa-solid fa-bell-slash text-3xl mb-2"></i>
+                    <p class="text-sm">No notices currently posted by the committee.</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Sidebar: Society Bylaws & Info -->
+        <div class="space-y-6">
+            <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm space-y-4">
+                <h3 class="text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2 text-emerald-700">
+                    <i class="fa-solid fa-scale-balanced"></i> Society Rules & Guidelines
+                </h3>
+                <div class="text-xs text-slate-600 leading-relaxed whitespace-pre-line bg-slate-50 p-4 rounded-xl border border-slate-100">
+                    {{ society.rules_text if society and society.rules_text else 'Standard society guidelines apply. Contact management committee for details.' }}
+                </div>
+            </div>
+
+            <div class="bg-emerald-50 rounded-2xl p-6 border border-emerald-100 space-y-3">
+                <h3 class="text-sm font-bold text-emerald-900 flex items-center gap-2">
+                    <i class="fa-solid fa-headset text-emerald-600"></i> Need Assistance?
+                </h3>
+                <p class="text-xs text-emerald-800 leading-relaxed">
+                    Facing issues with water, electricity, lift, or parking? Submit a quick helpdesk ticket.
+                </p>
+                <a href="{{ url_for('member_dashboard', tab='complaints') }}" class="inline-flex items-center gap-2 px-3 py-2 bg-emerald-600 text-white rounded-xl text-xs font-bold hover:bg-emerald-700 transition-colors shadow-sm">
+                    <i class="fa-solid fa-plus"></i>
+                    <span>File a Complaint</span>
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- ==================== TAB 2: MY FLAT & HOUSEHOLD ==================== -->
+    {% if active_tab == 'flat' %}
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        <!-- Left Column: Personal Profile / Flat info -->
+        <div class="space-y-6">
+            <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
+                <h2 class="text-base font-bold text-slate-900 mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-user-pen text-emerald-600"></i> My Profile & Flat Details
+                </h2>
+                <form action="{{ url_for('member_update_profile') }}" method="POST" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Full Name</label>
+                        <input type="text" name="name" value="{{ current_user.name }}" required class="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:ring-2 focus:ring-emerald-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Phone Number</label>
+                        <input type="text" name="phone" value="{{ current_user.phone or '' }}" placeholder="+91 98765 43210" class="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:ring-2 focus:ring-emerald-500">
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Wing</label>
+                            <input type="text" name="wing" value="{{ current_user.wing or '' }}" placeholder="A" class="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-300 rounded-xl uppercase font-bold focus:bg-white focus:ring-2 focus:ring-emerald-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Flat No.</label>
+                            <input type="text" name="flat_number" value="{{ current_user.flat_number or '' }}" required class="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-300 rounded-xl font-bold focus:bg-white focus:ring-2 focus:ring-emerald-500">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Registered Email (Read-Only)</label>
+                        <input type="email" value="{{ current_user.email }}" disabled class="w-full px-3.5 py-2 text-sm bg-slate-100 border border-slate-200 rounded-xl text-slate-500">
+                    </div>
+                    <button type="submit" class="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs transition-colors shadow-sm">
+                        <i class="fa-solid fa-floppy-disk mr-1"></i> Update My Details
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Middle Column: Family Members -->
+        <div class="space-y-6">
+            <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+                        <i class="fa-solid fa-people-roof text-emerald-600"></i> Family Members
+                    </h2>
+                    <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700">
+                        {{ family|length }} Members
+                    </span>
+                </div>
+
+                <!-- Add Family Member Form -->
+                <form action="{{ url_for('member_add_family') }}" method="POST" class="p-3.5 bg-slate-50 rounded-xl border border-slate-200 space-y-3 mb-4">
+                    <p class="text-xs font-bold text-slate-700 uppercase">Add Household Resident</p>
+                    <div class="grid grid-cols-2 gap-2">
+                        <input type="text" name="name" placeholder="Full Name" required class="px-3 py-1.5 text-xs bg-white border border-slate-300 rounded-lg">
+                        <select name="relation" required class="px-3 py-1.5 text-xs bg-white border border-slate-300 rounded-lg">
+                            <option value="">Relation</option>
+                            <option value="Spouse">Spouse</option>
+                            <option value="Child">Child / Son / Daughter</option>
+                            <option value="Parent">Father / Mother</option>
+                            <option value="Sibling">Brother / Sister</option>
+                            <option value="Other">Other Relative</option>
+                        </select>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <input type="number" name="age" placeholder="Age" min="1" max="120" class="px-3 py-1.5 text-xs bg-white border border-slate-300 rounded-lg">
+                        <input type="tel" name="phone" placeholder="Phone (optional)" class="px-3 py-1.5 text-xs bg-white border border-slate-300 rounded-lg">
+                    </div>
+                    <button type="submit" class="w-full py-1.5 px-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg text-xs transition-colors">
+                        <i class="fa-solid fa-user-plus mr-1"></i> Add Family Member
+                    </button>
+                </form>
+
+                <!-- List of Family Members -->
+                <div class="space-y-2">
+                    {% if family %}
+                        {% for mem in family %}
+                            <div class="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-200">
+                                <div>
+                                    <p class="text-xs font-bold text-slate-800">{{ mem.name }}</p>
+                                    <p class="text-[11px] text-slate-500">
+                                        {{ mem.relation }}{% if mem.age %}, {{ mem.age }} yrs{% endif %}
+                                        {% if mem.phone %}&bull; {{ mem.phone }}{% endif %}
+                                    </p>
+                                </div>
+                                <form action="{{ url_for('member_delete_family', fam_id=mem.id) }}" method="POST" onsubmit="return confirm('Remove family member?')">
+                                    <button type="submit" class="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 transition-colors" title="Delete">
+                                        <i class="fa-solid fa-trash-can text-xs"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-xs text-slate-400 text-center py-4">No family members registered yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Vehicles & Parking -->
+        <div class="space-y-6">
+            <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+                        <i class="fa-solid fa-car-rear text-emerald-600"></i> Vehicles & Parking
+                    </h2>
+                    <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700">
+                        {{ vehicles|length }} Vehicles
+                    </span>
+                </div>
+
+                <!-- Add Vehicle Form -->
+                <form action="{{ url_for('member_add_vehicle') }}" method="POST" class="p-3.5 bg-slate-50 rounded-xl border border-slate-200 space-y-3 mb-4">
+                    <p class="text-xs font-bold text-slate-700 uppercase">Register New Vehicle</p>
+                    <div class="grid grid-cols-2 gap-2">
+                        <select name="vehicle_type" required class="px-3 py-1.5 text-xs bg-white border border-slate-300 rounded-lg">
+                            <option value="4-Wheeler">4-Wheeler (Car)</option>
+                            <option value="2-Wheeler">2-Wheeler (Bike/Scooter)</option>
+                            <option value="Other">Other</option>
+                        </select>
+                        <input type="text" name="parking_slot" placeholder="Slot (e.g. A-P42)" class="px-3 py-1.5 text-xs bg-white border border-slate-300 rounded-lg uppercase">
+                    </div>
+                    <div>
+                        <input type="text" name="vehicle_number" placeholder="Vehicle No. (e.g. MH-04-AB-1234)" required class="w-full px-3 py-1.5 text-xs bg-white border border-slate-300 rounded-lg uppercase font-bold">
+                    </div>
+                    <button type="submit" class="w-full py-1.5 px-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg text-xs transition-colors">
+                        <i class="fa-solid fa-plus mr-1"></i> Register Vehicle
+                    </button>
+                </form>
+
+                <!-- List of Vehicles -->
+                <div class="space-y-2">
+                    {% if vehicles %}
+                        {% for veh in vehicles %}
+                            <div class="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-200">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center text-sm">
+                                        <i class="fa-solid {% if veh.vehicle_type == '2-Wheeler' %}fa-motorcycle{% else %}fa-car{% endif %}"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-xs font-bold text-slate-800 uppercase font-mono">{{ veh.vehicle_number }}</p>
+                                        <p class="text-[11px] text-slate-500">
+                                            {{ veh.vehicle_type }} &bull; Slot: <span class="font-semibold text-emerald-700">{{ veh.parking_slot or 'Unassigned' }}</span>
+                                        </p>
+                                    </div>
+                                </div>
+                                <form action="{{ url_for('member_delete_vehicle', veh_id=veh.id) }}" method="POST" onsubmit="return confirm('Remove vehicle record?')">
+                                    <button type="submit" class="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 transition-colors" title="Delete">
+                                        <i class="fa-solid fa-trash-can text-xs"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-xs text-slate-400 text-center py-4">No vehicles registered for your flat.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+    </div>
+    {% endif %}
+
+    <!-- ==================== TAB 3: MAINTENANCE & DUES ==================== -->
+    {% if active_tab == 'maintenance' %}
+    <div class="space-y-6">
+
+        <!-- Society Bank / UPI info banner -->
+        <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            <div>
+                <h3 class="text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
+                    <i class="fa-solid fa-qrcode text-emerald-600"></i> Society Official Payment Info
+                </h3>
+                <p class="text-xs text-slate-500 mt-1">Pay maintenance directly to the society account and submit the transaction reference below.</p>
+            </div>
+            <div class="bg-emerald-50 px-4 py-3 rounded-xl border border-emerald-200 text-xs text-emerald-900 flex items-center gap-4">
+                <div>
+                    <span class="text-[10px] text-emerald-700 uppercase font-bold block">Official Society UPI ID</span>
+                    <span class="font-mono font-bold text-sm">{{ society.upi_id if society and society.upi_id else 'society.maintenance@bank' }}</span>
+                </div>
+                <div class="border-l border-emerald-200 pl-4">
+                    <span class="text-[10px] text-emerald-700 uppercase font-bold block">Payee Name</span>
+                    <span class="font-bold">{{ society.name if society else 'Housing Society' }}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+            <!-- Active Billing Cycles & Submit Payment Form -->
+            <div class="lg:col-span-1 space-y-6">
+                <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
+                    <h2 class="text-base font-bold text-slate-900 mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-file-invoice-dollar text-emerald-600"></i> Submit Payment Proof
+                    </h2>
+
+                    <form action="{{ url_for('member_submit_payment') }}" method="POST" class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Select Billing Cycle *</label>
+                            <select name="bill_id" id="payment_bill_select" required onchange="updateBillAmount(this)" class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-300 rounded-xl">
+                                <option value="">-- Choose Maintenance Bill --</option>
+                                {% for b in bills %}
+                                    <option value="{{ b.id }}" data-amount="{{ b.amount }}">
+                                        {{ b.title }} (₹{{ "{:,.2f}".format(b.amount) }})
+                                        {% if b.id in approved_bill_ids %}&bull; [PAID]{% endif %}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Amount Paid (₹) *</label>
+                            <input type="number" step="0.01" name="amount" id="payment_amount_input" required placeholder="4500.00" class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-300 rounded-xl font-bold font-mono">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Payment Method *</label>
+                            <select name="payment_method" required class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-300 rounded-xl">
+                                <option value="UPI">UPI / GPay / PhonePe / Paytm</option>
+                                <option value="NEFT / NetBanking">NEFT / RTGS / IMPS</option>
+                                <option value="Cheque">Bank Cheque</option>
+                                <option value="Cash Deposit">Cash Deposit at Society Office</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Transaction Ref / UTR / Cheque No. *</label>
+                            <input type="text" name="transaction_ref" required placeholder="e.g. UPI/261084920194" class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-300 rounded-xl font-mono">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Payment Date *</label>
+                            <input type="date" name="payment_date" value="{{ now.strftime('%Y-%m-%d') }}" required class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-300 rounded-xl">
+                        </div>
+
+                        <button type="submit" class="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs transition-colors shadow-sm">
+                            <i class="fa-solid fa-paper-plane mr-1"></i> Submit Payment for Admin Approval
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Maintenance History & Receipts -->
+            <div class="lg:col-span-2 space-y-4">
+                <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
+                    <h2 class="text-base font-bold text-slate-900 mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-clock-rotate-left text-emerald-600"></i> My Payment History & Receipts
+                    </h2>
+
+                    {% if payments %}
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-xs">
+                                <thead>
+                                    <tr class="border-b border-slate-200 text-slate-400 uppercase font-bold">
+                                        <th class="pb-3">Bill / Month</th>
+                                        <th class="pb-3">Amount</th>
+                                        <th class="pb-3">Txn Reference</th>
+                                        <th class="pb-3">Date</th>
+                                        <th class="pb-3">Status</th>
+                                        <th class="pb-3 text-right">Receipt</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-100">
+                                    {% for p in payments %}
+                                        <tr class="hover:bg-slate-50/80 transition-colors">
+                                            <td class="py-3 font-semibold text-slate-800">
+                                                {{ p.bill_title }}
+                                                <span class="block text-[10px] text-slate-400">{{ p.billing_month }}</span>
+                                            </td>
+                                            <td class="py-3 font-mono font-bold text-slate-900">₹{{ "{:,.2f}".format(p.amount) }}</td>
+                                            <td class="py-3 font-mono text-slate-600">{{ p.transaction_ref }} <span class="block text-[10px] text-slate-400">via {{ p.payment_method }}</span></td>
+                                            <td class="py-3 text-slate-500 whitespace-nowrap">{{ p.payment_date }}</td>
+                                            <td class="py-3">
+                                                <span class="px-2.5 py-1 rounded-full text-[11px] font-bold uppercase
+                                                    {% if p.status == 'approved' %}bg-emerald-100 text-emerald-800
+                                                    {% elif p.status == 'pending' %}bg-amber-100 text-amber-800
+                                                    {% else %}bg-rose-100 text-rose-800{% endif %}">
+                                                    {{ p.status }}
+                                                </span>
+                                                {% if p.admin_remarks %}
+                                                    <span class="block text-[10px] text-slate-400 mt-1 italic">{{ p.admin_remarks }}</span>
+                                                {% endif %}
+                                            </td>
+                                            <td class="py-3 text-right">
+                                                <a href="{{ url_for('view_receipt', payment_id=p.id) }}" target="_blank" class="px-2.5 py-1 bg-slate-100 hover:bg-emerald-50 hover:text-emerald-700 text-slate-600 rounded-lg text-xs font-semibold inline-flex items-center gap-1 transition-colors">
+                                                    <i class="fa-solid fa-receipt"></i>
+                                                    <span>View</span>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-8 text-slate-400">
+                            <i class="fa-solid fa-receipt text-3xl mb-2"></i>
+                            <p class="text-xs">No maintenance payment records found for your flat yet.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- ==================== TAB 4: COMPLAINTS & HELPDESK ==================== -->
+    {% if active_tab == 'complaints' %}
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        <!-- File Complaint Form -->
+        <div class="lg:col-span-1 space-y-6">
+            <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
+                <h2 class="text-base font-bold text-slate-900 mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-circle-plus text-emerald-600"></i> Raise a Complaint Ticket
+                </h2>
+
+                <form action="{{ url_for('member_add_complaint') }}" method="POST" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Issue Category *</label>
+                        <select name="category" required class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-300 rounded-xl">
+                            <option value="Plumbing">Plumbing & Water Supply</option>
+                            <option value="Electrical">Electrical & Lighting</option>
+                            <option value="Elevator">Elevator / Lift Service</option>
+                            <option value="Security">Security & Access Gate</option>
+                            <option value="Parking">Parking Dispute / Obstruction</option>
+                            <option value="Sanitation">Sanitation & Garbage Disposal</option>
+                            <option value="Noise">Noise / Neighborhood Disturbance</option>
+                            <option value="General">Other / General Maintenance</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Priority Level *</label>
+                        <select name="priority" required class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-300 rounded-xl">
+                            <option value="Low">Low (Can be addressed during routine rounds)</option>
+                            <option value="Medium" selected>Medium (Standard attention needed)</option>
+                            <option value="High">High (Impacting daily flat operations)</option>
+                            <option value="Urgent">Urgent (Emergency / Leakage / Danger)</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Subject / Summary *</label>
+                        <input type="text" name="subject" required placeholder="e.g. Water dripping from 5th floor balcony" class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-300 rounded-xl font-semibold">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Detailed Description *</label>
+                        <textarea name="description" rows="4" required placeholder="Describe the issue in detail (location, time noticed, severity)..." class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-300 rounded-xl"></textarea>
+                    </div>
+
+                    <button type="submit" class="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs transition-colors shadow-sm">
+                        <i class="fa-solid fa-paper-plane mr-1"></i> Submit Complaint Ticket
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- My Complaints History -->
+        <div class="lg:col-span-2 space-y-4">
+            <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+                        <i class="fa-solid fa-list-check text-emerald-600"></i> My Complaint Tickets
+                    </h2>
+                    <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700">
+                        {{ complaints|length }} Tickets
+                    </span>
+                </div>
+
+                {% if complaints %}
+                    <div class="space-y-4">
+                        {% for comp in complaints %}
+                            <div class="p-4 rounded-2xl border border-slate-200 bg-slate-50/50 hover:bg-white transition-all space-y-3">
+                                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                                    <div class="flex flex-wrap items-center gap-2">
+                                        <span class="text-xs font-bold font-mono text-slate-400">#CMP-{{ comp.id }}</span>
+                                        <span class="text-xs font-bold px-2.5 py-0.5 rounded-full
+                                            {% if comp.status == 'resolved' %}bg-emerald-100 text-emerald-800
+                                            {% elif comp.status == 'in_progress' %}bg-blue-100 text-blue-800
+                                            {% elif comp.status == 'pending' %}bg-amber-100 text-amber-800
+                                            {% else %}bg-rose-100 text-rose-800{% endif %}">
+                                            {{ comp.status|upper }}
+                                        </span>
+                                        <span class="text-xs font-semibold px-2 py-0.5 rounded-md bg-slate-100 text-slate-600">
+                                            {{ comp.category }}
+                                        </span>
+                                        <span class="text-[11px] font-semibold text-slate-500">
+                                            Priority: {{ comp.priority }}
+                                        </span>
+                                    </div>
+                                    <span class="text-[11px] text-slate-400">{{ comp.created_at[:16] }}</span>
+                                </div>
+
+                                <h3 class="text-sm font-bold text-slate-900">{{ comp.subject }}</h3>
+                                <p class="text-xs text-slate-600 leading-relaxed">{{ comp.description }}</p>
+
+                                {% if comp.admin_reply %}
+                                    <div class="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-xl text-xs space-y-1">
+                                        <p class="font-bold text-blue-900 flex items-center gap-1.5">
+                                            <i class="fa-solid fa-shield-halved text-blue-600"></i> Management Committee Response:
+                                        </p>
+                                        <p class="text-blue-800 leading-relaxed">{{ comp.admin_reply }}</p>
+                                    </div>
+                                {% else %}
+                                    <div class="text-[11px] text-amber-700 bg-amber-50 px-3 py-1.5 rounded-lg inline-flex items-center gap-1.5">
+                                        <i class="fa-regular fa-clock"></i> Awaiting committee review & technician assignment.
+                                    </div>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-8 text-slate-400">
+                        <i class="fa-solid fa-thumbs-up text-3xl mb-2"></i>
+                        <p class="text-xs">No complaints logged. Everything is running smoothly!</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+    </div>
+    {% endif %}
+
+    <!-- ==================== TAB 5: VISITORS & GATE PASS ==================== -->
+    {% if active_tab == 'visitors' %}
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        <!-- Pre-Approve Visitor Form -->
+        <div class="lg:col-span-1 space-y-6">
+            <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
+                <h2 class="text-base font-bold text-slate-900 mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-id-card-clip text-emerald-600"></i> Pre-Approve Visitor
+                </h2>
+
+                <form action="{{ url_for('member_add_visitor') }}" method="POST" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Visitor Full Name *</label>
+                        <input type="text" name="visitor_name" required placeholder="e.g. Ramesh Patel" class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-300 rounded-xl">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Visitor Phone</label>
+                        <input type="tel" name="visitor_phone" placeholder="+91 98765 00000" class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-300 rounded-xl">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Vehicle No. (if arriving by car/bike)</label>
+                        <input type="text" name="vehicle_number" placeholder="e.g. MH-01-AB-1234" class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-300 rounded-xl uppercase">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Expected Date & Time</label>
+                        <input type="text" name="expected_time" placeholder="Today, 7:00 PM" class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-300 rounded-xl">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Purpose of Visit</label>
+                        <input type="text" name="purpose" placeholder="e.g. Family Guest / Delivery / Repair" class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-300 rounded-xl">
+                    </div>
+
+                    <button type="submit" class="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs transition-colors shadow-sm">
+                        <i class="fa-solid fa-ticket mr-1"></i> Issue Pre-Approved Gate Pass
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Visitor Passes List -->
+        <div class="lg:col-span-2 space-y-4">
+            <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
+                <h2 class="text-base font-bold text-slate-900 mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-address-book text-emerald-600"></i> My Flat Visitor Passes
+                </h2>
+
+                {% if visitors %}
+                    <div class="space-y-3">
+                        {% for vis in visitors %}
+                            <div class="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl border border-slate-200 bg-slate-50 gap-3">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center text-base">
+                                        <i class="fa-solid fa-user-check"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="text-xs font-bold text-slate-900">{{ vis.visitor_name }}</h4>
+                                        <p class="text-[11px] text-slate-500">
+                                            {% if vis.visitor_phone %}Ph: {{ vis.visitor_phone }} &bull;{% endif %}
+                                            {% if vis.vehicle_number %}Vehicle: <span class="font-mono uppercase">{{ vis.vehicle_number }}</span> &bull;{% endif %}
+                                            Purpose: {{ vis.purpose or 'General' }}
+                                        </p>
+                                        <p class="text-[10px] text-slate-400 mt-0.5">
+                                            Expected: {{ vis.expected_time or 'Anytime' }}
+                                            {% if vis.actual_entry %} | In: {{ vis.actual_entry[11:16] }}{% endif %}
+                                            {% if vis.actual_exit %} | Out: {{ vis.actual_exit[11:16] }}{% endif %}
+                                        </p>
+                                    </div>
+                                </div>
+                                <div>
+                                    <span class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase
+                                        {% if vis.status == 'checked_in' %}bg-blue-100 text-blue-800
+                                        {% elif vis.status == 'checked_out' %}bg-slate-200 text-slate-700
+                                        {% else %}bg-emerald-100 text-emerald-800{% endif %}">
+                                        {{ vis.status|replace('_', ' ') }}
+                                    </span>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-8 text-slate-400">
+                        <i class="fa-solid fa-id-badge text-3xl mb-2"></i>
+                        <p class="text-xs">No visitor passes created yet.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+    </div>
+    {% endif %}
+
+    <!-- ==================== TAB 6: AMENITY BOOKINGS ==================== -->
+    {% if active_tab == 'amenities' %}
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        <!-- Amenity Booking Form -->
+        <div class="lg:col-span-1 space-y-6">
+            <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
+                <h2 class="text-base font-bold text-slate-900 mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-calendar-plus text-emerald-600"></i> Book Society Amenity
+                </h2>
+
+                <form action="{{ url_for('member_book_amenity') }}" method="POST" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Amenity *</label>
+                        <select name="amenity_name" required class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-300 rounded-xl">
+                            <option value="Clubhouse Community Hall">Clubhouse Community Hall</option>
+                            <option value="Banquet & Party Lawn">Banquet & Party Lawn</option>
+                            <option value="Tennis / Badminton Court">Tennis / Badminton Court</option>
+                            <option value="Swimming Pool Gazebo">Swimming Pool Gazebo</option>
+                            <option value="Terrace Stargazing Deck">Terrace Stargazing Deck</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Date *</label>
+                        <input type="date" name="booking_date" required class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-300 rounded-xl">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Time Slot *</label>
+                        <select name="time_slot" required class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-300 rounded-xl">
+                            <option value="Morning (7:00 AM - 11:00 AM)">Morning (7:00 AM - 11:00 AM)</option>
+                            <option value="Afternoon (12:00 PM - 4:00 PM)">Afternoon (12:00 PM - 4:00 PM)</option>
+                            <option value="Evening (5:00 PM - 10:00 PM)">Evening (5:00 PM - 10:00 PM)</option>
+                            <option value="Full Day (8:00 AM - 10:00 PM)">Full Day (8:00 AM - 10:00 PM)</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Purpose / Occasion</label>
+                        <input type="text" name="purpose" placeholder="e.g. Birthday Celebration / Family Gathering" class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-300 rounded-xl">
+                    </div>
+
+                    <button type="submit" class="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs transition-colors shadow-sm">
+                        <i class="fa-solid fa-calendar-check mr-1"></i> Submit Reservation Request
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- My Bookings List -->
+        <div class="lg:col-span-2 space-y-4">
+            <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
+                <h2 class="text-base font-bold text-slate-900 mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-champagne-glasses text-emerald-600"></i> My Amenity Reservations
+                </h2>
+
+                {% if bookings %}
+                    <div class="space-y-3">
+                        {% for b in bookings %}
+                            <div class="p-4 rounded-xl border border-slate-200 bg-slate-50 flex items-center justify-between gap-4">
+                                <div>
+                                    <h4 class="text-xs font-bold text-slate-900">{{ b.amenity_name }}</h4>
+                                    <p class="text-[11px] text-slate-500">
+                                        Date: <strong>{{ b.booking_date }}</strong> &bull; Slot: {{ b.time_slot }}
+                                    </p>
+                                    {% if b.purpose %}
+                                        <p class="text-[10px] text-slate-400 mt-0.5">Occasion: {{ b.purpose }}</p>
+                                    {% endif %}
+                                </div>
+                                <span class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase
+                                    {% if b.status == 'approved' %}bg-emerald-100 text-emerald-800
+                                    {% elif b.status == 'rejected' %}bg-rose-100 text-rose-800
+                                    {% else %}bg-amber-100 text-amber-800{% endif %}">
+                                    {{ b.status }}
+                                </span>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-8 text-slate-400">
+                        <i class="fa-solid fa-calendar-xmark text-3xl mb-2"></i>
+                        <p class="text-xs">No amenity reservations requested yet.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function updateBillAmount(select) {
+    const selectedOption = select.options[select.selectedIndex];
+    const amount = selectedOption.getAttribute('data-amount');
+    const amountInput = document.getElementById('payment_amount_input');
+    if (amount) {
+        amountInput.value = amount;
+    }
+}
+</script>
+{% endblock %}
